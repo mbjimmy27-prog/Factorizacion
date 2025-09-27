@@ -617,7 +617,7 @@
     </div>
 
     <div class="author-credit">
-        <p>Juego educativo creado por <span class="author-name">Tu Nombre</span> - 
+        <p>Autores <span class="author-name">JIMMY MEZA BAUTISTA - MATEMATICA BASICA</span> - 
            <span id="current-year"></span></p>
     </div>
 
@@ -630,7 +630,7 @@
         let progress = 0;
         let isCustomEquation = false;
         let factorizationCorrect = false;
-        let currentMode = 'factorization';
+        let currentMode = 'factorization'; // 'factorization', 'roots', 'custom'
         
         // Elementos del DOM
         const equationElement = document.getElementById('equation');
@@ -670,12 +670,15 @@
         
         // Generar una ecuación cuadrática factorizable
         function generateEquation() {
+            // Generar factores aleatorios (números entre 1 y 10)
             let factor1 = Math.floor(Math.random() * 10) + 1;
             let factor2 = Math.floor(Math.random() * 10) + 1;
             
+            // Decidir aleatoriamente los signos
             const sign1 = Math.random() > 0.5 ? '+' : '-';
             const sign2 = Math.random() > 0.5 ? '+' : '-';
             
+            // Calcular coeficientes a, b, c
             const a = 1;
             let b, c;
             
@@ -688,11 +691,12 @@
             } else if (sign1 === '-' && sign2 === '+') {
                 b = factor2 - factor1;
                 c = -factor1 * factor2;
-            } else {
+            } else { // sign1 === '-' && sign2 === '-'
                 b = -(factor1 + factor2);
                 c = factor1 * factor2;
             }
             
+            // Guardar la ecuación actual
             currentEquation = {
                 factor1: factor1,
                 factor2: factor2,
@@ -705,8 +709,13 @@
                 root2: sign2 === '+' ? -factor2 : factor2
             };
             
+            // Mostrar la ecuación
             displayEquation(a, b, c);
+            
+            // Limpiar inputs y feedback
             resetInputs();
+            
+            // Enfocar el primer input
             factor1Input.focus();
         }
         
@@ -714,17 +723,20 @@
         function displayEquation(a, b, c) {
             let equationString = '';
             
+            // Coeficiente a
             if (a !== 1) {
                 equationString += `${a}`;
             }
             equationString += 'x²';
             
+            // Coeficiente b
             if (b > 0) {
                 equationString += ` + ${b}x`;
             } else if (b < 0) {
                 equationString += ` - ${Math.abs(b)}x`;
             }
             
+            // Coeficiente c
             if (c > 0) {
                 equationString += ` + ${c}`;
             } else if (c < 0) {
@@ -797,6 +809,7 @@
             attempts++;
             attemptsElement.textContent = attempts;
             
+            // Verificar si la respuesta es correcta (considerando el orden)
             if ((userSign1 === currentEquation.sign1 && userSign2 === currentEquation.sign2 && 
                  userFactor1 === currentEquation.factor1 && userFactor2 === currentEquation.factor2) ||
                 (userSign1 === currentEquation.sign2 && userSign2 === currentEquation.sign1 && 
@@ -813,6 +826,7 @@
                 scoreElement.textContent = score;
                 correctCountElement.textContent = correctCount;
                 
+                // Actualizar ecuaciones de raíces
                 const factor1 = userSign1 === currentEquation.sign1 ? userFactor1 : userFactor2;
                 const factor2 = userSign2 === currentEquation.sign2 ? userFactor2 : userFactor1;
                 const sign1 = userSign1 === currentEquation.sign1 ? userSign1 : userSign2;
@@ -821,13 +835,18 @@
                 root1Equation.textContent = `x ${sign1} ${factor1} = 0`;
                 root2Equation.textContent = `x ${sign2} ${factor2} = 0`;
                 
+                // Actualizar estados de botones
                 updateButtonStates();
+                
+                // Actualizar progreso
                 progress = Math.min(progress + 5, 100);
                 progressElement.style.width = progress + '%';
                 
             } else {
                 feedbackElement.textContent = 'Incorrecto. Intenta nuevamente.';
                 feedbackElement.className = 'feedback incorrect';
+                
+                // Reducir puntuación por intentos incorrectos
                 score = Math.max(0, score - 2);
                 scoreElement.textContent = score;
             }
@@ -844,6 +863,7 @@
                 return;
             }
             
+            // Verificar si las raíces son correctas (considerando el orden)
             if ((Math.abs(userRoot1 - currentEquation.root1) < 0.001 && Math.abs(userRoot2 - currentEquation.root2) < 0.001) ||
                 (Math.abs(userRoot1 - currentEquation.root2) < 0.001 && Math.abs(userRoot2 - currentEquation.root1) < 0.001)) {
                 
@@ -852,52 +872,62 @@
                 
                 score += 10;
                 correctCount++;
+                
                 scoreElement.textContent = score;
                 correctCountElement.textContent = correctCount;
                 
+                // Cambiar función del botón a siguiente
                 checkBtn.textContent = 'Siguiente';
                 checkBtn.onclick = nextEquation;
                 
+                // Actualizar progreso
                 progress = Math.min(progress + 5, 100);
                 progressElement.style.width = progress + '%';
                 
             } else {
                 feedbackElement.textContent = 'Raíces incorrectas. Intenta nuevamente.';
                 feedbackElement.className = 'feedback incorrect';
+                
+                // Reducir puntuación por intentos incorrectos
                 score = Math.max(0, score - 2);
                 scoreElement.textContent = score;
             }
         }
         
         // Proporcionar una pista
-        function giveHint() {
-            if (currentMode === 'factorization') {
-                const cValue = currentEquation.c;
-                const bValue = currentEquation.b;
-                
-                const cSign = cValue < 0 ? '-' : '';
-                const bSign = bValue < 0 ? '-' : '';
-                
-                const cAbsolute = Math.abs(cValue);
-                const bAbsolute = Math.abs(bValue);
-                
-                const hint = `Pista: Los factores deben multiplicarse para dar ${cSign}${cAbsolute} y sumarse para dar ${bSign}${bAbsolute}`;
-                feedbackElement.textContent = hint;
-                feedbackElement.className = 'feedback';
-            } else if (currentMode === 'roots') {
-                const hint = `Pista: Resuelve cada factor igualado a cero. Por ejemplo, si tienes (x + a) = 0, entonces x = -a`;
-                feedbackElement.textContent = hint;
-                feedbackElement.className = 'feedback';
-            }
-        }
+  function giveHint() {
+    if (currentMode === 'factorization') {
+        // Dar una pista sobre los factores con signos correctos
+        const cValue = currentEquation.c;
+        const bValue = currentEquation.b;
+        
+        const cSign = cValue < 0 ? '-' : '';
+        const bSign = bValue < 0 ? '-' : '';
+        
+        const cAbsolute = Math.abs(cValue);
+        const bAbsolute = Math.abs(bValue);
+        
+        const hint = `Pista: Los factores deben multiplicarse para dar ${cSign}${cAbsolute} y sumarse para dar ${bSign}${bAbsolute}`;
+        feedbackElement.textContent = hint;
+        feedbackElement.className = 'feedback';
+    } else if (currentMode === 'roots') {
+        // Dar una pista sobre las raíces
+        const hint = `Pista: Resuelve cada factor igualado a cero. Por ejemplo, si tienes (x + a) = 0, entonces x = -a`;
+        feedbackElement.textContent = hint;
+        feedbackElement.className = 'feedback';
+    }
+}
         
         // Verificar si una ecuación cuadrática es factorizable
         function isFactorizable(a, b, c) {
+            // Calcular el discriminante
             const discriminant = b * b - 4 * a * c;
             
+            // Información detallada del discriminante
             let discriminantInfoText = `<strong>Cálculo del discriminante:</strong><br>`;
             discriminantInfoText += `D = b² - 4ac = (${b})² - 4(${a})(${c}) = ${b*b} - ${4*a*c} = ${discriminant}<br>`;
             
+            // Si el discriminante es negativo
             if (discriminant < 0) {
                 discriminantInfoText += `El discriminante es negativo (${discriminant} < 0), por lo que la ecuación no tiene soluciones reales.`;
                 return { 
@@ -907,6 +937,7 @@
                 };
             }
             
+            // Verificar si es cuadrado perfecto
             const sqrtDiscriminant = Math.sqrt(discriminant);
             if (sqrtDiscriminant !== Math.floor(sqrtDiscriminant)) {
                 discriminantInfoText += `El discriminante (${discriminant}) no es un cuadrado perfecto, por lo que la ecuación no se puede factorizar con números enteros.`;
@@ -917,6 +948,7 @@
                 };
             }
             
+            // Verificar si los factores son enteros
             const factor1 = (-b + sqrtDiscriminant) / (2 * a);
             const factor2 = (-b - sqrtDiscriminant) / (2 * a);
             
@@ -956,6 +988,7 @@
         
         // Verificar ecuación personalizada
         function checkCustomEquation() {
+            // Obtener valores
             const aSign = customASign.value;
             const aValue = parseInt(customA.value) || 1;
             const bSign = customBSign.value;
@@ -963,34 +996,48 @@
             const cSign = customCSign.value;
             const cValue = parseInt(customC.value) || 0;
             
+            // Validar entrada
             if (aValue < 1) {
                 feedbackElement.textContent = 'El coeficiente de x² debe ser mayor a 0.';
                 feedbackElement.className = 'feedback incorrect';
                 return;
             }
             
+            // Calcular coeficientes con signos
             const a = aSign === '+' ? aValue : -aValue;
             const b = bSign === '+' ? bValue : -bValue;
             const c = cSign === '+' ? cValue : -cValue;
             
+            // Mostrar la ecuación
             displayEquation(a, b, c);
+            
+            // Verificar si es factorizable
             const result = isFactorizable(a, b, c);
             
+            // Mostrar información del discriminante
             discriminantInfo.innerHTML = result.discriminantInfo;
             discriminantInfo.classList.remove('hidden');
             
             if (result.factorizable) {
+                // Calcular signos y factores para la factorización
                 let factor1 = Math.abs(result.factor1);
                 let factor2 = Math.abs(result.factor2);
                 let sign1 = result.factor1 >= 0 ? '-' : '+';
                 let sign2 = result.factor2 >= 0 ? '-' : '+';
                 
+                // Ajustar para ecuación cuadrática general (a puede ser diferente de 1)
                 if (a !== 1) {
+                    // Para ecuaciones con a ≠ 1, necesitamos encontrar factores de a y c
+                    // que sumen b. Esto es más complejo y simplificamos para este ejemplo
                     feedbackElement.textContent = '¡Ecuación válida! Ahora intenta factorizarla. Nota: Para ecuaciones con a ≠ 1, la factorización puede ser más compleja.';
                     feedbackElement.className = 'feedback correct';
                     
+                    // Para simplificar, asumimos que podemos dividir toda la ecuación por a
+                    // para obtener una ecuación con a=1
                     const simplifiedB = b / a;
                     const simplifiedC = c / a;
+                    
+                    // Encontrar factores para la ecuación simplificada
                     const simplifiedResult = isFactorizable(1, simplifiedB, simplifiedC);
                     if (simplifiedResult.factorizable) {
                         factor1 = Math.abs(simplifiedResult.factor1);
@@ -1003,6 +1050,7 @@
                     feedbackElement.className = 'feedback correct';
                 }
                 
+                // Actualizar la ecuación actual
                 currentEquation = {
                     a: a,
                     b: b,
@@ -1015,8 +1063,11 @@
                     root2: result.factor2
                 };
                 
+                // Cambiar a modo de factorización
                 currentMode = 'factorization';
                 updateButtonStates();
+                
+                // Limpiar inputs de factorización
                 resetInputs();
                 
             } else {
@@ -1060,6 +1111,7 @@
                 }
             });
             
+            // Configurar el botón de verificar según el modo actual
             checkBtn.onclick = function() {
                 switch(currentMode) {
                     case 'custom':
@@ -1074,6 +1126,7 @@
                 }
             };
             
+            // Permitir verificar con Enter
             factor1Input.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') checkFactorization();
             });
@@ -1097,6 +1150,7 @@
             setupCollapsibleMenus();
             setupEventListeners();
             
+            // Actualizar estadísticas iniciales
             scoreElement.textContent = score;
             correctCountElement.textContent = correctCount;
             attemptsElement.textContent = attempts;
